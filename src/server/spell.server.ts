@@ -8,9 +8,10 @@ const spellServerUtil : SpellServerUtil = getNewServerUtilInstance();
 
 const spellServer : Application = express();
 
+spellServer.use(express.static(process.cwd()+"/src/"+spellServerUtil.getResourcesDir()));
 spellServer.get('/',(request : Request ,response : Response,
     next : NextFunction) => {
-    response.send("Hello");
+    spellServerUtil.serveStaticContent(process.cwd()+"/src/resources/spell.html",response);    
 });
 
 spellServer.listen(spellServerUtil.getPort(), () => {

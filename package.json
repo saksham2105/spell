@@ -11,6 +11,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bin": {
+    "spell" : "npm run dev"
+  },
   "dependencies": {
     "express": "^4.18.1"
   },

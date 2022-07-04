@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+ <meta charset="utf-8">  
+ <script>
+  window.onload = function() {
+    fetch('http://localhost:8000/').then(function(response) {
+        return response.text();
+    }).then(function(html) {
+        console.log(html);
+    }).catch(function(err) {
+        console.log("Something went wrong "+e);
+    });
+  }  
+ </script>   
+ </head>
+ <body>
+   <div id="div1"></div> 
+  <input type="button" value="Click" id="coolbutton" name="coolbutton"></input>
+ </body>  
+</html>

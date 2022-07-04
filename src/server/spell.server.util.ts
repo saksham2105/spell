@@ -1,6 +1,8 @@
 import {Response} from "express";
-import config from "../../package.conf.json";
+
 import fs from 'fs';
+
+import conf from "../../package.conf.json";
 
 export class SpellServerUtil {
       
@@ -10,7 +12,7 @@ export class SpellServerUtil {
      constructor() {
      }
 
-     serveStaticContent(file : any,response : Response) : void {
+     serveStaticContent(file : any,response : Response,config : any) : void {
           fs.readFile(file,'utf8',(err , data  : string) => {
             response.send(this.processInterpolation(data,config));
               if (err) {
@@ -20,11 +22,11 @@ export class SpellServerUtil {
      }
 
      getPort() : number {
-        return config.port;
+        return conf.port;
      }
 
      getResourcesDir() : String {
-       return config.resources;
+       return conf.resources;
      }
 
      replaceDoubleBraces(html : string ,map : any) : string{

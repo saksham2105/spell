@@ -1,4 +1,4 @@
-import { ComponentDecorator } from "../libs/ComponentDecorator";
+import { ComponentDecorator } from "../../libs/ComponentDecorator";
 
 
 @ComponentDecorator({
@@ -6,10 +6,9 @@ import { ComponentDecorator } from "../libs/ComponentDecorator";
     templateUrl : './app.component.html',
     styleUrls : ['./app.component.css']
 })
-export class AppComponent {
-    title : string= "Spell";
+export class RegisterComponent {
+    title : string= "register";
     constructor() {
-        console.log("AppComponent constructor being invoked");
     }
     ngOnInit() {
        console.log(Object.getOwnPropertyNames(this));

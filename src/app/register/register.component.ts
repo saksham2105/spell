@@ -1,14 +1,14 @@
 import { ComponentDecorator } from "../../libs/ComponentDecorator";
 
-
 @ComponentDecorator({
     selector : 'app-root',
-    templateUrl : './app.component.html',
-    styleUrls : ['./app.component.css']
+    templateUrl : './register.component.html',
+    styleUrls : ['./register.component.css']
 })
 export class RegisterComponent {
     title : string= "register";
     constructor() {
+        console.log("Register component constructor invoked");
     }
     ngOnInit() {
        console.log(Object.getOwnPropertyNames(this));

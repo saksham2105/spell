@@ -3,9 +3,17 @@ import {Response} from "express";
 import fs, { read } from 'fs';
 
 import path from "path";
+import { isBooleanObject, isNumberObject } from "util/types";
 
 import conf from "../../package.conf.json";
 import { Component } from "../libs/Component";
+import { SpellModule } from "../libs/SpellModule";
+
+var module : SpellModule = new SpellModule();
+
+export const setModule = (mod : SpellModule) => {
+  module = mod;
+};
 
 export class SpellServerUtil {
       
@@ -32,6 +40,45 @@ export class SpellServerUtil {
        return conf.resources;
      }
 
+     isNumber(str: string): boolean {
+      if (typeof str !== 'string') {
+        return false;
+      }
+      if (str.trim() === '') {
+        return false;
+      }
+      return !Number.isNaN(Number(str));
+    }
+
+    isBoolean(value : any) : boolean{ 
+      switch(value) { 
+        case true: 
+        case "true": 
+          return true; 
+        default: 
+          return false; 
+      }     
+    }
+
+     extractParametersFromFunctionString(funcString : string) : Array<any> {
+       var parameters = new Array<any>();
+       var parametersString = funcString.split("(");
+       parameters = parametersString[1].substring(0,parametersString[1].length-1).split(",");
+       for (let i=0;i<parameters.length;i++) {
+         if (this.isNumber(parameters[i])) {
+           parameters[i] = Number(parameters[i]);
+         }
+         if (this.isBoolean(parameters[i])) {
+           parameters[i] = Boolean(parameters[i]);
+         }
+       }
+       return parameters;   
+     }
+
+     extractFunctionNameFromFunctionString(funcString : string) : string {
+       return funcString.split("(")[0];
+     }
+
      replaceDoubleBraces(html : string ,map : any) : string{
           return html.replace(/{{(.+?)}}/g, (_,key) : string => {
             if (map[key] === undefined) {
@@ -43,63 +90,69 @@ export class SpellServerUtil {
           });
      }
 
+     //Process interpolation from html
      processInterpolation(maskedHtml : string,map : any) : string {
         return this.replaceDoubleBraces(maskedHtml,map);
      }
+     
+     //initialize components from module
+     initializeComponentsFromModule(components : Component[],
+      files : string[]) : void {
+      import("../app/app.module").then((mod) => {
+          //Initializing App Module with SpellModule
+          eval("new "+mod.AppModule+"()");
+          //Code to initializing Objects of Components
+          for (let i=0;i<files.length;i++) {
+            import(files[i]).then((m) => {
+              var obj : any = eval("new "+module.declarations[i]+"()");
+              components[i].setInstance(obj);
+              var keys = Object.keys(obj);
+              components[i].setKeys(keys);
+            }).catch((err) => {
+               console.log("Error "+err);
+            });
+          }
+      }).catch((e) => {
+         console.log("Error occured initializing Module "+e);
+         return;
+      });
+    }
 
-     scanModulesAndBuildComponents(components : Component[]) : void {
+    //Scan All folders and get components
+    scanModulesAndBuildComponents(components : Component[]) : void {
       let arr : string[] = new Array<string>();
-      let filesArray : string[] = new Array<string>();
-      const files = getAllFiles("./src",arr);
+      let files : string[] = new Array<string>();
+      getAllFiles("./src/app",arr);
       for (let i=0;i<arr.length;i++) {
-        if (arr[i].indexOf("server\\spell.server.ts") == -1 && 
-        arr[i].indexOf("server\\spell.server.util.ts") == -1 && 
-        arr[i].indexOf("libs\\Component.ts") == -1 &&
-        arr[i].indexOf("libs\\ComponentDecorator.ts") == -1 &&
-        arr[i].endsWith(".ts")) {
-          filesArray.push(arr[i]);
+        if (arr[i].endsWith(".ts") && arr[i].indexOf("app.module.ts") == -1) {
+          files.push(arr[i]);
         } 
       }
-      for (let i=0;i<filesArray.length;i++) {
-        let splittedString : string[] = filesArray[i].split("\\");
+      for (let i=0;i<files.length;i++) {
+        //Restructring folder name
+        let splittedString : string[] = files[i].split("\\");
         let location = "";
         for (let j=0;j<splittedString.length;j++) {
             if (j==2 || j==3) continue;
             if (j == splittedString.length-1) location = location + splittedString[j];
             else location += splittedString[j] + "\\";
         }
-        filesArray[i] = location;
+        files[i] = location;
       }
-      console.log(filesArray);
-      for(let i=0;i<filesArray.length;i++) {
-        let cls = filesArray[i];
-        if (cls.indexOf("app.component.ts") != -1) {
-          console.log("Ander aaya");
-          import(cls).then((module) => {
-            var obj : any = eval("new "+module.AppComponent+"()");
-            components[i].setInstance(obj);
-            var keys = Object.keys(obj);
-            components[i].setKeys(keys);
-          }).catch((e) => {
-             console.log("Error "+e);
-          });    
-    
-        }
-      }
+      this.initializeComponentsFromModule(components,files);
     }
 }
 
+//Utility function to recursively scan all the files
 const getAllFiles = function(dirPath : any, arrayOfFiles : any) : string[]{
   const files = fs.readdirSync(dirPath)
-
   arrayOfFiles = arrayOfFiles || []
-
   files.forEach(function(file) {
     if (fs.statSync(dirPath + "/" + file).isDirectory()) {
       arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
     } else {
       arrayOfFiles.push(path.join(__dirname, dirPath, "/", file))
     }
-  })
- return arrayOfFiles
+  });
+  return arrayOfFiles
 }

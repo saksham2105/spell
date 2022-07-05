@@ -7,6 +7,7 @@ import { Component } from "../libs/Component";
 
 var components : Component[] = new Array<Component>();
 
+
 const getNewServerUtilInstance = () => new SpellServerUtil();
 
 const spellServerUtil : SpellServerUtil = getNewServerUtilInstance(); 
@@ -21,30 +22,12 @@ export function addComponent(component : Component) {
 
 spellServer.get('/',(request : Request ,response : Response,
     next : NextFunction) => {
-    spellServerUtil.serveStaticContent(process.cwd()+"/src/resources/spell.html",response,config);    
+     spellServerUtil.serveStaticContent(process.cwd()+"/src/resources/spell.html",response,config);    
 });
 
-spellServer.get('/app',(request : Request,
+spellServer.get(config.startMapping,(request : Request,
     response : Response,next : NextFunction) => {
-    spellServerUtil.scanModulesAndBuildComponents(components);
-    // let pkg : string = "C:\\spell\\src\\app\\app.component.ts" ;   
-    // import(pkg).then((module) => {
-    //     for (let i=0;i<components.length;i++) {
-    //         var obj : any = eval("new "+module.AppComponent+"()");
-    //         components[i].setInstance(obj);
-    //         var keys = Object.keys(obj);
-    //         components[i].setKeys(keys);
-    //     }
-    //     for (let i=0;i<components.length;i++) {
-    //         console.log(components[i]);
-    //     }
-        // for (let i = 0; i < keys.length ;i++) {
-        //     console.log(keys[0]);
-        //     console.log(obj[keys[0]]);        
-        // }
-//     }).catch((e) => {
-//        console.log("Error "+e);
-//     });    
+     spellServerUtil.scanModulesAndBuildComponents(components);
      let map : any = {};
      spellServerUtil.serveStaticContent(process.cwd()+"/src/app/app.component.html",response,map);
 });

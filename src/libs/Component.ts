@@ -5,9 +5,15 @@ export class Component {
     styleUrls : string[] = new Array<string>();
     instance : any = null;
     keys : any = null;
+    path : string = "";
+    uri : string = "";
     constructor() {
 
     }
+    setPath(path : string) {this.path = path;}
+    getPath() : string {return this.path;}
+    setUri(uri : any) {this.uri=uri;}
+    getUri() : any {return this.uri;}
     setSelector(selector : string) {
         this.selector = selector;
     }

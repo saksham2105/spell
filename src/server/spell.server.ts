@@ -7,7 +7,6 @@ import { Component } from "../libs/Component";
 
 var components : Component[] = new Array<Component>();
 
-
 const getNewServerUtilInstance = () => new SpellServerUtil();
 
 const spellServerUtil : SpellServerUtil = getNewServerUtilInstance(); 
@@ -25,12 +24,18 @@ spellServer.get('/',(request : Request ,response : Response,
      spellServerUtil.serveStaticContent(process.cwd()+"/src/resources/spell.html",response,config);    
 });
 
-spellServer.get(config.startMapping,(request : Request,
-    response : Response,next : NextFunction) => {
-     spellServerUtil.scanModulesAndBuildComponents(components);
-     let map : any = {};
-     spellServerUtil.serveStaticContent(process.cwd()+"/src/app/app.component.html",response,map);
-});
+
+spellServerUtil.scanModulesAndBuildComponents(components,spellServer);
+
+export const mapUriWithComponents = (uri : string,component : Component,
+    comps : Component[]) => {
+    spellServer.get(uri,(request : Request,
+        response : Response,next : NextFunction) => {
+              spellServerUtil.scanModulesAndBuildComponents(comps,spellServer);
+              let map : any = {}; //TODO : Need to write code for map
+              spellServerUtil.serveStaticContent(component.getPath()+"\\"+component.getTemplateUrl(),response,map);
+    });
+   }
 
 spellServer.listen(spellServerUtil.getPort(), () => {
     console.log(`Server is running on port ${spellServerUtil.getPort()}`);

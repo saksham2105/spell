@@ -1,20 +1,24 @@
-import {Response} from "express";
+import {Application,  NextFunction,  Response} from "express";
 
 import fs, { read } from 'fs';
 
 import path from "path";
-import { isBooleanObject, isNumberObject } from "util/types";
 
+import { mapUriWithComponents } from "./spell.server";
 import conf from "../../package.conf.json";
 import { Component } from "../libs/Component";
 import { SpellModule } from "../libs/SpellModule";
+import { Routes } from "../libs/Routes";
 
 var module : SpellModule = new SpellModule();
 
-export const setModule = (mod : SpellModule) => {
+export function setModule(mod : SpellModule) {
   module = mod;
 };
 
+export function getModule() : SpellModule {
+   return module;
+};
 export class SpellServerUtil {
       
      interpolationSuffix : string = "}";
@@ -95,22 +99,43 @@ export class SpellServerUtil {
         return this.replaceDoubleBraces(maskedHtml,map);
      }
      
+     getPath(file : string) : string {
+        let path : string = "";
+        let splittedString : string[] = file.split("\\");
+        for (let i=0;i<splittedString.length-1;i++) {
+          if (i < splittedString.length - 2) {
+            path = path + splittedString[i]+"\\";
+          } else {
+               path = path + splittedString[i];
+          }
+        }
+        return path;
+     }
      //initialize components from module
      initializeComponentsFromModule(components : Component[],
-      files : string[]) : void {
+      files : string[],spellServer : Application) : void {
       import("../app/app.module").then((mod) => {
           //Initializing App Module with SpellModule
           eval("new "+mod.AppModule+"()");
+          let spellModule =  getModule();
+          let routes : Routes = spellModule.getImports();
+          let allRoutes : any = routes[0];
+          routes = allRoutes;
           //Code to initializing Objects of Components
           for (let i=0;i<files.length;i++) {
-            import(files[i]).then((m) => {
-              var obj : any = eval("new "+module.declarations[i]+"()");
-              components[i].setInstance(obj);
-              var keys = Object.keys(obj);
-              components[i].setKeys(keys);
-            }).catch((err) => {
-               console.log("Error "+err);
-            });
+            for (let j=0;j<routes.length;j++) {
+              if (module.declarations[i] == routes[j].component) {
+                let obj : any = eval("new "+module.declarations[i]+"()");
+                components[i].setInstance(obj);
+                components[i].setPath(this.getPath(files[i]));
+                let keys = Object.keys(obj);
+                components[i].setKeys(keys);
+                components[i].setUri(routes[j].path);
+              }
+            }
+          }
+          for (let i=0;i<components.length;i++) {
+            mapUriWithComponents(components[i].getUri(),components[i],components);
           }
       }).catch((e) => {
          console.log("Error occured initializing Module "+e);
@@ -119,7 +144,7 @@ export class SpellServerUtil {
     }
 
     //Scan All folders and get components
-    scanModulesAndBuildComponents(components : Component[]) : void {
+    scanModulesAndBuildComponents(components : Component[],spellServer : Application) : void {
       let arr : string[] = new Array<string>();
       let files : string[] = new Array<string>();
       getAllFiles("./src/app",arr);
@@ -139,7 +164,7 @@ export class SpellServerUtil {
         }
         files[i] = location;
       }
-      this.initializeComponentsFromModule(components,files);
+      this.initializeComponentsFromModule(components,files,spellServer);
     }
 }
 

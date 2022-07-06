@@ -1,7 +1,7 @@
 export class Component {
     selector : string = "";
-    interpolationMap : Map<string,string> = new Map();
     templateUrl : string = "";
+    template : string = ""; 
     styleUrls : string[] = new Array<string>();
     instance : any = null;
     keys : any = null;
@@ -20,11 +20,11 @@ export class Component {
     getSelector() : string {
         return this.selector;
     }
-    setInterpolationMap(interpolationMap : Map<string,string>) {
-        this.interpolationMap = interpolationMap;
+    setTemplate(template : string) : void {
+        this.template = template;
     }
-    getInterpolationMap() : Map<string,string> {
-        return this.interpolationMap;
+    getTemplate() : string {
+        return this.template;
     }
     setTemplateUrl(templateUrl : string) {
        this.templateUrl = templateUrl;

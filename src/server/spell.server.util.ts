@@ -9,6 +9,8 @@ import conf from "../../package.conf.json";
 import { Component } from "../libs/Component";
 import { SpellModule } from "../libs/SpellModule";
 import { Routes } from "../libs/Routes";
+import { parse } from 'node-html-parser';
+
 
 var module : SpellModule = new SpellModule();
 
@@ -16,6 +18,14 @@ export function setModule(mod : SpellModule) {
   module = mod;
 };
 
+//TODO:
+/**
+ * To Add Code to Parse Html using some library
+ * Parse interpolation
+ * Manipulate Html script for component
+ * Handle event listener by sending request from frontend to backend
+ * Create Different Directive and handle Requests by Calling Rest Api of Spell Server 
+ */
 export function getModule() : SpellModule {
    return module;
 };
@@ -23,17 +33,22 @@ export class SpellServerUtil {
       
      interpolationSuffix : string = "}";
      interpolationPrefix : string = "{";
-
      constructor() {
      }
 
      serveStaticContent(file : any,response : Response,config : any) : void {
           fs.readFile(file,'utf8',(err , data  : string) => {
+            var document = parse(data);
+            var elems = document.getElementsByTagName("*"); //Getting all elements
             response.send(this.processInterpolation(data,config));
               if (err) {
                throw err;
               }
           });  
+     }
+
+     serveStaticContextFromText(html : string,response : Response,config : any) : void {
+       response.send(this.processInterpolation(html,config));
      }
 
      getPort() : number {

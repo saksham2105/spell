@@ -6,7 +6,7 @@ import { ComponentDecorator } from "../../libs/ComponentDecorator";
     styleUrls : ['./register.component.css']
 })
 export class RegisterComponent {
-    title : string= "register";
+    title : string= "Registration Module";
     constructor() {
         console.log("Register component constructor invoked");
     }

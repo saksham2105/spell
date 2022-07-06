@@ -1,6 +1,7 @@
 {
  "port" : 8000,
+ "host" : "localhost",
  "resources" : "resources",
  "application" : "Spell",
- "startMapping" : "/app"   
+ "startMapping" : "/"   
 }

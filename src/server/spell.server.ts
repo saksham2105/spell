@@ -32,8 +32,21 @@ export const mapUriWithComponents = (uri : string,component : Component,
     spellServer.get(uri,(request : Request,
         response : Response,next : NextFunction) => {
               spellServerUtil.scanModulesAndBuildComponents(comps,spellServer);
-              let map : any = {}; //TODO : Need to write code for map
-              spellServerUtil.serveStaticContent(component.getPath()+"\\"+component.getTemplateUrl(),response,map);
+              let map : any = {}; 
+              let instance : any = component.getInstance();
+              //Populating Map
+              for (let i=0;i<component.keys.length;i++) {
+                  map[component.keys[i]] = instance[component.keys[i]];
+              }
+              if (component.getTemplateUrl() != null 
+              && component.getTemplateUrl() != undefined 
+              && component.getTemplateUrl().length > 0) {
+                spellServerUtil.serveStaticContent(component.getPath()+"\\"+component.getTemplateUrl(),response,map);
+              } else if(component.getTemplate() != null 
+              && component.getTemplate() != undefined 
+              && component.getTemplate().length > 0) {
+                spellServerUtil.serveStaticContextFromText(component.getTemplate(),response,map);
+              }
     });
    }
 

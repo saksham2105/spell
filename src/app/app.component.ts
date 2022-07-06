@@ -11,15 +11,23 @@ export class AppComponent {
     title : string= "Spell";
     name : string = "Saksham";
     isEmployed : boolean = true;
-    func : string = "getTest()";
+    func : string = "updateName('Sahil')";
+    score : number = 10;
     constructor() {
         console.log("AppComponent constructor being invoked");
     }
     ngOnInit() {
        console.log(Object.getOwnPropertyNames(this));
     }
+    incrementScore() {
+        this.score ++;
+    }
     getTrainingName(){
         console.log("Training name is "+this.title);
+    }
+    updateName(name : string) {
+        this.incrementScore();
+        this.name = name;
     }
     setTitle(title : string) {
         this.title = title;

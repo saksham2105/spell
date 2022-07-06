@@ -43,24 +43,41 @@ export class SpellServerUtil {
      }
 
      //binding onload listener
-     bindWindowOnLoadListener(scriptElement : any,document : any,elements : any) : void {
+     bindWindowOnLoadListener(document : any,
+      scriptElement : any,
+      component : Component,uri : string) : void {
        scriptElement.innerHTML = "";
-       scriptElement.innerHTML += `let host = "${conf.host}";
-       let port = ${conf.port};
-       window.onload=function() {`;
-       scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");
-       for (let i = 0; i< elements.length ; i++) {
-         if (elements[i].hasAttribute("${this.clickAttribute}")) {
-          elements[i].addEventListener('click',(e) => {
-            console.log("Button Clicked");
-          });
+       let elements = document.getElementsByTagName("*");
+       scriptElement.innerHTML += `window.onload=function() {`;
+       scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
+       let url = conf.protocol+"://"+conf.host+":"+conf.port+uri;
+       for (let i=0;i<elements.length;i++) {
+        let invokableFunction = ""
+        if (elements[i].hasAttribute(this.clickAttribute)) {
+          invokableFunction = elements[i].getAttribute(this.clickAttribute);
         }
-       }`; 
+        scriptElement.innerHTML += `
+          if (elements[${i+3}].hasAttribute("${this.clickAttribute}")) {
+           elements[${i+3}].addEventListener("click",(e) => {
+             console.log("Clicked on button");
+             var xhr = new XMLHttpRequest();
+             xhr.onreadystatechange = function() {
+                 if (xhr.readyState == XMLHttpRequest.DONE) {
+                     console.log(xhr.responseText);
+                     document.body.innerHTML = "";
+                     document.body.innerHTML = xhr.responseText;
+                 }
+             }
+             xhr.open("GET", "${conf.protocol}://${conf.host}:${conf.port}/spell/getInvokableFunction?invokableFunction=${invokableFunction}&selector=${component.getSelector()}&uri=${uri}", true);
+             xhr.send(null);
+          });
+         }`; 
+       } 
        scriptElement.innerHTML += `};`
      }
 
      //Binding Click events to elements
-     bindClickEventListeners(document : any) : any {
+     bindClickEventListeners(document : any,component : Component,uri : string) : any {
            let scriptElement = null;
            let elements = document.getElementsByTagName("*");
            for (let i=0;i<elements.length;i++) {
@@ -69,19 +86,21 @@ export class SpellServerUtil {
                 break;               
              }
            }
-           if (scriptElement != null) this.bindWindowOnLoadListener(scriptElement,document,elements);
+           if (scriptElement != null) this.bindWindowOnLoadListener(document,scriptElement,component,uri);
            return document;
      }
 
      //Serve Static content from File
-     serveStaticContent(file : any,response : Response,config : any) : void {
+     serveStaticContent(file : any,response : Response,
+      config : any,
+      component : Component,uri : string) : void {
           fs.readFile(file,'utf8',(err , data  : string) => {
             var document : any = parse(data);
             let html = this.processInterpolation(document.innerHTML,config);
             document.innerHTML = "";
             this.createScriptElement(document);
             document.innerHTML += html;
-            document = this.bindClickEventListeners(document);
+            document = this.bindClickEventListeners(document,component,uri);
             response.send(document.innerHTML);
               if (err) {
                throw err;
@@ -90,13 +109,17 @@ export class SpellServerUtil {
      }
 
      //Server Static Context via template text
-     serveStaticContextFromText(html : string,response : Response,config : any) : void {
+     serveStaticContextFromText(html : string,
+      response : Response,
+      config : any,
+      component : Component,
+      uri : string) : void {
       var document : any = parse(html);
       let htmlString = this.processInterpolation(document.innerHTML,config);
       document.innerHTML = "";
       this.createScriptElement(document);
       document.innerHTML += htmlString;
-      document = this.bindClickEventListeners(document);
+      document = this.bindClickEventListeners(document,component,uri);
       response.send(document.innerHTML);
     }
 

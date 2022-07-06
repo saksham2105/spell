@@ -1,7 +1,7 @@
 import { ComponentDecorator } from "../../libs/ComponentDecorator";
 
 @ComponentDecorator({
-    selector : 'app-root',
+    selector : 'app-register',
     templateUrl : './register.component.html',
     styleUrls : ['./register.component.css']
 })

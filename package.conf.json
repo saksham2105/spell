@@ -1,7 +1,8 @@
 {
- "port" : 8000,
+ "port" : 5000,
  "host" : "localhost",
  "resources" : "resources",
  "application" : "Spell",
- "startMapping" : "/"   
+ "startMapping" : "/",
+ "protocol" : "http"   
 }

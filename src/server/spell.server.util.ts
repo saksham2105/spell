@@ -31,25 +31,74 @@ export function getModule() : SpellModule {
 };
 export class SpellServerUtil {
       
+     clickAttribute = "(click)";
      interpolationSuffix : string = "}";
      interpolationPrefix : string = "{";
      constructor() {
      }
 
+     createScriptElement(document : any) : void {
+       let html = document.innerHTML;
+       document.innerHTML += "<script></script>"+html;
+     }
+
+     //binding onload listener
+     bindWindowOnLoadListener(scriptElement : any,document : any,elements : any) : void {
+       scriptElement.innerHTML = "";
+       scriptElement.innerHTML += `let host = "${conf.host}";
+       let port = ${conf.port};
+       window.onload=function() {`;
+       scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");
+       for (let i = 0; i< elements.length ; i++) {
+         if (elements[i].hasAttribute("${this.clickAttribute}")) {
+          elements[i].addEventListener('click',(e) => {
+            console.log("Button Clicked");
+          });
+        }
+       }`; 
+       scriptElement.innerHTML += `};`
+     }
+
+     //Binding Click events to elements
+     bindClickEventListeners(document : any) : any {
+           let scriptElement = null;
+           let elements = document.getElementsByTagName("*");
+           for (let i=0;i<elements.length;i++) {
+             if (elements[i].tagName == "SCRIPT") {
+                scriptElement = elements[i];
+                break;               
+             }
+           }
+           if (scriptElement != null) this.bindWindowOnLoadListener(scriptElement,document,elements);
+           return document;
+     }
+
+     //Serve Static content from File
      serveStaticContent(file : any,response : Response,config : any) : void {
           fs.readFile(file,'utf8',(err , data  : string) => {
-            var document = parse(data);
-            var elems = document.getElementsByTagName("*"); //Getting all elements
-            response.send(this.processInterpolation(data,config));
+            var document : any = parse(data);
+            let html = this.processInterpolation(document.innerHTML,config);
+            document.innerHTML = "";
+            this.createScriptElement(document);
+            document.innerHTML += html;
+            document = this.bindClickEventListeners(document);
+            response.send(document.innerHTML);
               if (err) {
                throw err;
               }
           });  
      }
 
+     //Server Static Context via template text
      serveStaticContextFromText(html : string,response : Response,config : any) : void {
-       response.send(this.processInterpolation(html,config));
-     }
+      var document : any = parse(html);
+      let htmlString = this.processInterpolation(document.innerHTML,config);
+      document.innerHTML = "";
+      this.createScriptElement(document);
+      document.innerHTML += htmlString;
+      document = this.bindClickEventListeners(document);
+      response.send(document.innerHTML);
+    }
 
      getPort() : number {
         return conf.port;

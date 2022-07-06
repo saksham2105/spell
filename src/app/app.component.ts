@@ -11,6 +11,7 @@ export class AppComponent {
     title : string= "Spell";
     name : string = "Saksham";
     isEmployed : boolean = true;
+    func : string = "getTest()";
     constructor() {
         console.log("AppComponent constructor being invoked");
     }

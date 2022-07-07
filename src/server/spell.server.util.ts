@@ -51,7 +51,9 @@ export class SpellServerUtil {
       component : Component,uri : string,
       generateScript : boolean,
       resetListenerFunction : string,
-      listenerEvent : string) : void {
+      listenerEvent : string,
+      event : string,
+      attribute : string) : void {
        if (generateScript) {
         scriptElement.innerHTML = "";
         let elements = document.getElementsByTagName("*");
@@ -59,12 +61,12 @@ export class SpellServerUtil {
         scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
         for (let i=2;i<elements.length;i++) {
          let invokableFunction = ""
-         if (elements[i].hasAttribute(this.clickAttribute)) {
-           invokableFunction = elements[i].getAttribute(this.clickAttribute);
+         if (elements[i].hasAttribute(attribute)) {
+           invokableFunction = elements[i].getAttribute(attribute);
          }
          scriptElement.innerHTML += `
-           if (elements[${i+2}].hasAttribute("${this.clickAttribute}")) {
-            elements[${i+2}].${listenerEvent}("click",(e) => {
+           if (elements[${i+2}].hasAttribute("${attribute}")) {
+            elements[${i+2}].${listenerEvent}("${event}",(e) => {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function() {
                   if (xhr.readyState == XMLHttpRequest.DONE) {
@@ -80,7 +82,7 @@ export class SpellServerUtil {
         } 
         scriptElement.innerHTML += `}`; 
         scriptElement.innerHTML += `window.onload=function() {`;
-        scriptElement.innerHTML += `resetAddEventListener();`
+        scriptElement.innerHTML += `${listenerEvent}();`
         scriptElement.innerHTML += `};`
         }
      }
@@ -98,7 +100,7 @@ export class SpellServerUtil {
                 break;               
              }
            }
-           if (scriptElement != null) this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript,"resetAddEventListener","addEventListener");
+           if (scriptElement != null) this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript,"resetAddEventListener","addEventListener","click",this.clickAttribute);
            return document;
      }
 

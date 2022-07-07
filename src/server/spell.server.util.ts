@@ -64,7 +64,6 @@ export class SpellServerUtil {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function() {
                   if (xhr.readyState == XMLHttpRequest.DONE) {
-                      console.log(xhr.responseText);
                       document.getElementsByTagName("body")[0].innerHTML = "";
                       document.getElementsByTagName("body")[0].innerHTML = xhr.responseText;
                       resetAddEventListener();

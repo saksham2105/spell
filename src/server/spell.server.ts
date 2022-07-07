@@ -47,7 +47,6 @@ spellServer.get("/spell/getInvokableFunction",(request :Request,response : Respo
    let invokableFunction : any = request.query["invokableFunction"];
    let selector : any = request.query["selector"];
    let uri : any = request.query["uri"];
-   console.log(invokableFunction+","+selector+","+uri);
    let component : Component = new Component();
    for (let i=0;i<components.length;i++) {
     if (components[i].getSelector() == selector) {
@@ -61,6 +60,9 @@ spellServer.get("/spell/getInvokableFunction",(request :Request,response : Respo
     return;
    }
    let parameters : any[] = spellServerUtil.extractParametersFromFunctionString(invokableFunction);
+   for (let i=0;i<parameters.length;i++) {
+     parameters[i] = parameters[i].replace(/["']/g, "");
+   }
    component.invokeFunction(functionName,parameters);
    buildMapAndServeContent(component,response,uri,false);
 });

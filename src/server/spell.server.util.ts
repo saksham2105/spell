@@ -82,6 +82,9 @@ export class SpellServerUtil {
         }
      }
 
+     createBody() : string {
+       return "<body></body>";
+     }
      //Binding Click events to elements
      bindClickEventListeners(document : any,component : Component,uri : string,generateScript : boolean) : any {
            let scriptElement = null;
@@ -106,7 +109,7 @@ export class SpellServerUtil {
             document.innerHTML = "";
             this.createScriptElement(document,generateScript);
             let html1 = html;
-            document.innerHTML += "<body></body>";
+            document.innerHTML += this.createBody();
             document.getElementsByTagName("body")[0].innerHTML += html1;
             document = this.bindClickEventListeners(document,component,uri,generateScript);
             if(generateScript) response.send(document.innerHTML);
@@ -129,7 +132,7 @@ export class SpellServerUtil {
       document.innerHTML = "";
       this.createScriptElement(document,generateScript);
       let html1 = htmlString;
-      document.innerHTML += "<body></body>";
+      document.innerHTML += this.createBody();
       document.getElementsByTagName("body")[0].innerHTML += html1;      
       document = this.bindClickEventListeners(document,component,uri,generateScript);
       if(generateScript) response.send(document.innerHTML);

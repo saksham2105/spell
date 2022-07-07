@@ -69,32 +69,38 @@ export class SpellServerUtil {
           scriptElement.innerHTML += "";
           let elements = document.getElementsByTagName("*");
           scriptElement.innerHTML += `function ${resetListenerFunction}(){`;
-          scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
+          scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");
+          `;
           for (let i=2;i<elements.length;i++) {
            let value = "";
-           if (elements[i].hasAttribute(attribute)) {
+           if (elements[i].hasAttribute(attribute)) { 
              value = elements[i].getAttribute(attribute);
-             console.log("Val is "+value);
            }
            let key = this.getParameterKey(attribute);
            scriptElement.innerHTML += `
              if (elements[${i+2}].hasAttribute("${attribute}")) {
               elements[${i+2}].${listenerEvent}("${event}",(e) => {
-                console.log("invoked for "+"${event}");
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == XMLHttpRequest.DONE) {
-                        document.getElementsByTagName("body")[0].innerHTML = "";
-                        document.getElementsByTagName("body")[0].innerHTML = xhr.responseText;
+                        let root = new DOMParser().parseFromString(xhr.responseText,"text/html");
+                        let elementsFromDOMParser = root.getElementsByTagName("*");
+                        for (let j=2;j<elementsFromDOMParser.length;j++) {
+                           if (j+1 != ${i+2}) {
+                            elements[j+1].innerHTML = elementsFromDOMParser[j].innerHTML;
+                           }                           
+                        }
                         ${resetListenerFunctions[0]}();
                         ${resetListenerFunctions[1]}();
                     }
                 }
                 let val = "#";
+                let value = elements[${i+2}].getAttribute("${attribute}")
                 if ("${attribute}" == "${this.spellModelAttribute}") {
                   val = elements[${i+2}].value;
                 }
-                xhr.open("GET", "${conf.protocol}://${conf.host}:${conf.port}/spell/api?${key}=${value}&selector=${component.getSelector()}&uri=${uri}&value="+val, true);
+                let url = "${conf.protocol}://${conf.host}:${conf.port}/spell/api?${key}="+value+"&selector=${component.getSelector()}&uri=${uri}&value="+val;
+                xhr.open("GET", url, true);
                 xhr.send(null);
              });
             }`; 

@@ -46,12 +46,8 @@ const buildMapAndServeContent = (component : Component,response : Response,uri :
 spellServer.get("/spell/api",(request :Request,response : Response,next : NextFunction) => {
    let invokableFunction : any = request.query["invokableFunction"];
    let key : any = request.query["key"];
-   console.log(key);
    let selector : any = request.query["selector"];
    let value : any = request.query["value"];
-   if (value !=null && value != undefined) {
-     console.log("Value is "+value);
-   } 
    let uri : any = request.query["uri"];
    if (invokableFunction != null 
     && invokableFunction != undefined) {
@@ -81,6 +77,8 @@ spellServer.get("/spell/api",(request :Request,response : Response,next : NextFu
         break;  
      }
     }
+    component.getInstance()[key] = value;
+    buildMapAndServeContent(component,response,uri,false);
   }  
 });
 spellServerUtil.scanModulesAndBuildComponents(components,spellServer);

@@ -32,6 +32,7 @@ export function getModule() : SpellModule {
 export class SpellServerUtil {
       
      clickAttribute = "(click)";
+     spellModelAttribute = "[spellModel]";
      interpolationSuffix : string = "}";
      interpolationPrefix : string = "{";
      constructor() {
@@ -47,11 +48,14 @@ export class SpellServerUtil {
      //binding onload listener
      bindWindowOnLoadListener(document : any,
       scriptElement : any,
-      component : Component,uri : string,generateScript : boolean) : void {
+      component : Component,uri : string,
+      generateScript : boolean,
+      resetListenerFunction : string,
+      listenerEvent : string) : void {
        if (generateScript) {
         scriptElement.innerHTML = "";
         let elements = document.getElementsByTagName("*");
-        scriptElement.innerHTML += "function resetAddEventListener(){"
+        scriptElement.innerHTML += `function ${resetListenerFunction}(){`;
         scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
         for (let i=2;i<elements.length;i++) {
          let invokableFunction = ""
@@ -60,7 +64,7 @@ export class SpellServerUtil {
          }
          scriptElement.innerHTML += `
            if (elements[${i+2}].hasAttribute("${this.clickAttribute}")) {
-            elements[${i+2}].addEventListener("click",(e) => {
+            elements[${i+2}].${listenerEvent}("click",(e) => {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function() {
                   if (xhr.readyState == XMLHttpRequest.DONE) {
@@ -94,7 +98,7 @@ export class SpellServerUtil {
                 break;               
              }
            }
-           if (scriptElement != null) this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript);
+           if (scriptElement != null) this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript,"resetAddEventListener","addEventListener");
            return document;
      }
 

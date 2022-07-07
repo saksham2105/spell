@@ -56,47 +56,73 @@ export class SpellServerUtil {
            return "";
      }
 
+     generateResetListenerFunction(document : any,
+      scriptElement : any,
+      component : Component,uri : string,
+      generateScript : boolean,
+      resetListenerFunction : string,
+      resetListenerFunctions : string[],
+      listenerEvent : string,
+      event : string,
+      attribute : string): void {
+        if (generateScript) {
+          scriptElement.innerHTML += "";
+          let elements = document.getElementsByTagName("*");
+          scriptElement.innerHTML += `function ${resetListenerFunction}(){`;
+          scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
+          for (let i=2;i<elements.length;i++) {
+           let value = "";
+           if (elements[i].hasAttribute(attribute)) {
+             value = elements[i].getAttribute(attribute);
+             console.log("Val is "+value);
+           }
+           let key = this.getParameterKey(attribute);
+           scriptElement.innerHTML += `
+             if (elements[${i+2}].hasAttribute("${attribute}")) {
+              elements[${i+2}].${listenerEvent}("${event}",(e) => {
+                console.log("invoked for "+"${event}");
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == XMLHttpRequest.DONE) {
+                        document.getElementsByTagName("body")[0].innerHTML = "";
+                        document.getElementsByTagName("body")[0].innerHTML = xhr.responseText;
+                        ${resetListenerFunctions[0]}();
+                        ${resetListenerFunctions[1]}();
+                    }
+                }
+                let val = "#";
+                if ("${attribute}" == "${this.spellModelAttribute}") {
+                  val = elements[${i+2}].value;
+                }
+                xhr.open("GET", "${conf.protocol}://${conf.host}:${conf.port}/spell/api?${key}=${value}&selector=${component.getSelector()}&uri=${uri}&value="+val, true);
+                xhr.send(null);
+             });
+            }`; 
+          }
+          scriptElement.innerHTML += `}`; 
+        }
+     }
      //binding onload listener
      bindWindowOnLoadListener(document : any,
       scriptElement : any,
       component : Component,uri : string,
       generateScript : boolean,
       resetListenerFunction : string,
+      resetListenerFunctions : string[],
       listenerEvent : string,
       event : string,
       attribute : string) : void {
-       if (generateScript) {
-        scriptElement.innerHTML = "";
-        let elements = document.getElementsByTagName("*");
-        scriptElement.innerHTML += `function ${resetListenerFunction}(){`;
-        scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
-        for (let i=2;i<elements.length;i++) {
-         let value = ""
-         if (elements[i].hasAttribute(attribute)) {
-           value = elements[i].getAttribute(attribute);
-         }
-         let key = this.getParameterKey(attribute);
-         scriptElement.innerHTML += `
-           if (elements[${i+2}].hasAttribute("${attribute}")) {
-            elements[${i+2}].${listenerEvent}("${event}",(e) => {
-              var xhr = new XMLHttpRequest();
-              xhr.onreadystatechange = function() {
-                  if (xhr.readyState == XMLHttpRequest.DONE) {
-                      document.getElementsByTagName("body")[0].innerHTML = "";
-                      document.getElementsByTagName("body")[0].innerHTML = xhr.responseText;
-                      resetAddEventListener();
-                  }
-              }
-              xhr.open("GET", "${conf.protocol}://${conf.host}:${conf.port}/spell/api?${key}=${value}&selector=${component.getSelector()}&uri=${uri}", true);
-              xhr.send(null);
-           });
-          }`; 
-        } 
-        scriptElement.innerHTML += `}`; 
-        scriptElement.innerHTML += `window.onload=function() {`;
-        scriptElement.innerHTML += `${resetListenerFunction}();`
-        scriptElement.innerHTML += `};`
+       if (generateScript) { 
+        this.generateResetListenerFunction(document,scriptElement,component,uri,generateScript,resetListenerFunction,resetListenerFunctions,listenerEvent,event,attribute);
         }
+     }
+
+     invokeWindowOnLoad(scriptElement : any,resetListenerFunctions : string[]) {
+      scriptElement.innerHTML += `window.onload=function() {`;
+      for (let i=0;i<resetListenerFunctions.length;i++) {
+        scriptElement.innerHTML += `${resetListenerFunctions[i]}();\n`
+      }
+      scriptElement.innerHTML += `};`
      }
 
      createBody() : string {
@@ -112,7 +138,14 @@ export class SpellServerUtil {
                 break;               
              }
            }
-           if (scriptElement != null) this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript,"resetAddEventListener","addEventListener","click",this.clickAttribute);
+           if (scriptElement != null) {
+            let resetListenerFunctions : string[] = new Array<string>();
+            resetListenerFunctions.push("resetClickAddEventListener");
+            resetListenerFunctions.push("resetInputAddEventListener");
+            this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript,"resetClickAddEventListener",resetListenerFunctions,"addEventListener","click",this.clickAttribute);
+            this.bindWindowOnLoadListener(document,scriptElement,component,uri,generateScript,"resetInputAddEventListener",resetListenerFunctions,"addEventListener","input",this.spellModelAttribute);
+            this.invokeWindowOnLoad(scriptElement,resetListenerFunctions);
+           }           
            return document;
      }
 

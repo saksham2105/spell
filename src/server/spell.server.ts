@@ -45,26 +45,36 @@ const buildMapAndServeContent = (component : Component,response : Response,uri :
 //Api to Get invokable function and selector from Frontend
 spellServer.get("/spell/api",(request :Request,response : Response,next : NextFunction) => {
    let invokableFunction : any = request.query["invokableFunction"];
+   let key : any = request.query["key"];
    let selector : any = request.query["selector"];
+   let value : any = request.query["value"];
+   if (value !=null && value != undefined) {
+     console.log("Value is "+value);
+   } 
    let uri : any = request.query["uri"];
-   let component : Component = new Component();
-   for (let i=0;i<components.length;i++) {
-    if (components[i].getSelector() == selector) {
-       component = components[i];
-       break;  
+   if (invokableFunction != null 
+    && invokableFunction != undefined) {
+    let component : Component = new Component();
+    for (let i=0;i<components.length;i++) {
+     if (components[i].getSelector() == selector) {
+        component = components[i];
+        break;  
+     }
     }
-   }
-   let functionName = spellServerUtil.extractFunctionNameFromFunctionString(invokableFunction);
-   if (functionName.length == 0) {
-    response.send("Invalid function");
-    return;
-   }
-   let parameters : any[] = spellServerUtil.extractParametersFromFunctionString(invokableFunction);
-   for (let i=0;i<parameters.length;i++) {
-     parameters[i] = parameters[i].replace(/["']/g, "");
-   }
-   component.invokeFunction(functionName,parameters);
-   buildMapAndServeContent(component,response,uri,false);
+    let functionName = spellServerUtil.extractFunctionNameFromFunctionString(invokableFunction);
+    if (functionName.length == 0) {
+     response.send("Invalid function");
+     return;
+    }
+    let parameters : any[] = spellServerUtil.extractParametersFromFunctionString(invokableFunction);
+    for (let i=0;i<parameters.length;i++) {
+      parameters[i] = parameters[i].replace(/["']/g, "");
+    }
+    component.invokeFunction(functionName,parameters);
+    buildMapAndServeContent(component,response,uri,false);
+  } else if(key != null && key != undefined) {
+
+  }
 });
 spellServerUtil.scanModulesAndBuildComponents(components,spellServer);
 

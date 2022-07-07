@@ -43,7 +43,7 @@ const buildMapAndServeContent = (component : Component,response : Response,uri :
 };
 
 //Api to Get invokable function and selector from Frontend
-spellServer.get("/spell/getInvokableFunction",(request :Request,response : Response,next : NextFunction) => {
+spellServer.get("/spell/api",(request :Request,response : Response,next : NextFunction) => {
    let invokableFunction : any = request.query["invokableFunction"];
    let selector : any = request.query["selector"];
    let uri : any = request.query["uri"];

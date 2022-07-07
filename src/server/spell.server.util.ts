@@ -33,6 +33,7 @@ export class SpellServerUtil {
       
      clickAttribute = "(click)";
      spellModelAttribute = "[spellModel]";
+     changeAttribute = "(change)";
      interpolationSuffix : string = "}";
      interpolationPrefix : string = "{";
      constructor() {
@@ -43,6 +44,16 @@ export class SpellServerUtil {
         let html = document.innerHTML;
         document.innerHTML += "<script></script>"+html;
       }
+     }
+
+     getParameterKey(attribute : string) : string {
+           if(attribute == this.clickAttribute || attribute == this.changeAttribute) {
+            return "invokableFunction";
+           }
+           if (attribute == this.spellModelAttribute) {
+             return "key";
+           }
+           return "";
      }
 
      //binding onload listener
@@ -60,10 +71,11 @@ export class SpellServerUtil {
         scriptElement.innerHTML += `function ${resetListenerFunction}(){`;
         scriptElement.innerHTML += `let elements = document.getElementsByTagName("*");`;
         for (let i=2;i<elements.length;i++) {
-         let invokableFunction = ""
+         let value = ""
          if (elements[i].hasAttribute(attribute)) {
-           invokableFunction = elements[i].getAttribute(attribute);
+           value = elements[i].getAttribute(attribute);
          }
+         let key = this.getParameterKey(attribute);
          scriptElement.innerHTML += `
            if (elements[${i+2}].hasAttribute("${attribute}")) {
             elements[${i+2}].${listenerEvent}("${event}",(e) => {
@@ -75,14 +87,14 @@ export class SpellServerUtil {
                       resetAddEventListener();
                   }
               }
-              xhr.open("GET", "${conf.protocol}://${conf.host}:${conf.port}/spell/getInvokableFunction?invokableFunction=${invokableFunction}&selector=${component.getSelector()}&uri=${uri}", true);
+              xhr.open("GET", "${conf.protocol}://${conf.host}:${conf.port}/spell/api?${key}=${value}&selector=${component.getSelector()}&uri=${uri}", true);
               xhr.send(null);
            });
           }`; 
         } 
         scriptElement.innerHTML += `}`; 
         scriptElement.innerHTML += `window.onload=function() {`;
-        scriptElement.innerHTML += `${listenerEvent}();`
+        scriptElement.innerHTML += `${resetListenerFunction}();`
         scriptElement.innerHTML += `};`
         }
      }

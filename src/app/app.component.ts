@@ -29,6 +29,9 @@ export class AppComponent {
         this.incrementScore();
         this.name = name;
     }
+    updateTitle(title : string) {
+        this.title = title;
+    }
     setTitle(title : string) {
         this.title = title;
     }
